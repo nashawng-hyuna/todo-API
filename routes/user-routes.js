@@ -7,6 +7,15 @@ const jsontoken = require('../jwt/jwt');
 
 const user_router = express.Router();
 
+user_router.get('/form/signup', async (req, res) =>{
+    
+      return res.status(200).render('signup.handlebars');
+});
+
+user_router.get('/form/signin', (req, res) =>{
+    return res.status(200).render('signin.handlebars');
+});
+
 user_router.post('/signup', async (req, res, next) =>{
 
     const {error} = joi.validateInput(req.body);
@@ -14,7 +23,6 @@ user_router.post('/signup', async (req, res, next) =>{
      if(!error) //input is valid
      {
        try{
-
             //get form input
             const {username, email, password} = req.body;
 
@@ -44,27 +52,30 @@ user_router.post('/signup', async (req, res, next) =>{
                    id:result._id,
                    username:result.username
                 }
+    
+               //let token =  await jsontoken.sign(payload);
 
-              let token =  await jsontoken.sign(payload);
+               let random_var =  await jsontoken.sign(res, payload); //random_var not used in this version
+                
+                req.flash('sign-up', 'Sign up successful');
+            
+               return res.redirect(301, `/api/task/display/${result._id}`);
 
-                return res.status(200).json({
+                /*return res.status(200).json({
                     id: result._id,
                     username: result.username,
                     token
-                });
+                });*/
          }
          catch(error)
          {
              next(error);
          }   
      }
-
      //error found from input validation
     const {message} = error.details[0];
     return res.status(400).send(boom.badRequest(message).output.payload);
 });
-
-
 
 user_router.post('/signin', async (req, res, next) =>{
     
@@ -84,16 +95,21 @@ user_router.post('/signin', async (req, res, next) =>{
             if(result === true)
             {   
                 const payload = {
-                    id:result._id,
-                    username:result.username
-                }
+                    id:person._id,
+                    username:person.username
+                 }
                 
-                let token =  await jsontoken.sign(payload);
+               // let token =  await jsontoken.sign(payload);
+                let token =  await jsontoken.sign(res, payload);
 
-                return res.status(200).json({
+                req.flash('sign-in', 'Sign in successful');
+
+               return res.redirect(301, `/api/task/display/${person._id}`);
+
+               /*return res.status(200).json({
                     message:'Login successful',
                     token
-                }); 
+                });*/
             }
         }
 

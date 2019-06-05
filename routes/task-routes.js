@@ -10,28 +10,10 @@ const task_router = express.Router();
 
 /*CRUD OPERATIONS DONE BELOW*/
 
-/*implement display all tasks*/
-task_router.get('/display-all/', jsontoken.verify, async (req, res, next) =>{
-        
-     let pageNumber = req.query.pageNumber;
-     let pageSize = req.query.pageSize;
-
-     try{
-          let result = await task.find()
-          .select({_id:-1, description:-1, createdOn: 1, completed: 1})
-          .skip((pageNumber - 1) * pageSize);
-
-          console.log(result);
-
-           if(result.length > 0)
-           {
-                res.status(200).send(result);
-           }
-     }
-     catch(error)
-     {
-          next(error);
-     }
+task_router.get('/create', jsontoken.verify, (req, res) =>{
+     
+     const {uid} = req.query
+     return res.status(200).render('add.handlebars', {uid});
 });
 
 /*1. Display tasks  for  user with given id */
@@ -39,11 +21,15 @@ task_router.get('/display/:id', jsontoken.verify,  async (req, res, next) =>{
 
      const {id} = req.params;
 
+     let message = req.flash('success');
+
      try{
           let person = await user.findOne({_id:id})
-          .populate({path:'task', select: ' -_id description createdOn completed, completedOn'});
+          .populate({path:'task', select: ' _id description createdOn completed completedOn'});
 
-          return res.status(200).send(person.task);
+           return res.status(200).render('index.handlebars', {user:person, task:person.task, message});
+           
+         // return res.status(200).send(person.task);
      }
      catch(error)
      {
@@ -57,7 +43,7 @@ task_router.post('/add', jsontoken.verify, async (req, res, next) =>{
    const {id, description} = req.body;
 
    const {error} = joi.validateTask({description});
-  
+
     //no error found
     if(!error)
     {
@@ -76,13 +62,15 @@ task_router.post('/add', jsontoken.verify, async (req, res, next) =>{
                //get task id & add to array in user model
                const {_id} = newTodo;
                result.task.push(_id);
-
+              
                //update user model 
                let updateUser = await user.updateOne({_id:id}, {$set:{task:result.task}});
 
-               return res.status(200).json({
+               return res.status(301).redirect(`/api/task/display/${id}`);
+
+               /*return res.status(200).json({
                     message:"Task added"  
-               });       
+               }); */      
              }  
          }
          catch(error)
@@ -98,14 +86,18 @@ task_router.post('/add', jsontoken.verify, async (req, res, next) =>{
 });
 
 /*3. update a task with a given*/
-task_router.patch('/update/:id',jsontoken.verify, async (req, res, next) =>{
+task_router.patch('/update/:task_id', jsontoken.verify, async (req, res, next) =>{
 
-     const {id} = req.params;
+   
+     const {task_id} = req.params;
+     const {id} = req.body;
 
      try{
          //find and update task
-        let item = await task.updateOne({_id:id}, {$set:{"completed":true, "completedOn": Date()}});
-         return res.send(item);
+        let item = await task.updateOne({_id:task_id}, {$set:{"completed":true, "completedOn": Date()}});
+         return res.status(301).redirect(`/api/task/display/${id}`);
+
+        // return res.status(200).send(item);
      }
      catch(error)
      {
@@ -114,12 +106,17 @@ task_router.patch('/update/:id',jsontoken.verify, async (req, res, next) =>{
 });
 
 /*4. update a task with a given*/
-task_router.delete('/remove/:id',jsontoken.verify, async (req, res, next) =>{
-     const {id} = req.params;
+task_router.delete('/remove/:task_id', jsontoken.verify, async (req, res, next) =>{
+
+     const {task_id} = req.params;
+     const {id} = req.body;
 
      try{ 
-          let item = await task.deleteOne({_id:id});
-          return res.send(item);
+          let item = await task.deleteOne({_id:task_id});
+
+          return res.status(301).redirect(`/api/task/display/${id}`);
+
+         // return res.status(204).send(item);
      }
      catch(error)
      {

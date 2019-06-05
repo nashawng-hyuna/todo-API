@@ -7,7 +7,7 @@ const taskSchema  = new mongoose.Schema({
 
     createdOn:{type:Date, default: Date.now},
     
-    completedOn:{type:Date}
+    completedOn:{type:Date, default:null}
 });
 
 const model = mongoose.model('task', taskSchema);

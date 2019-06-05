@@ -1,0 +1,59 @@
+<div>
+    {{#if success}}
+         <h1>{{success}} </h1>
+         <hr> 
+    {{/if}}
+
+     {{#if success_in}}
+         <h1>{{success_in}} </h1>
+         <hr> 
+    {{/if}}
+    
+    <h4> Task of {{user.username}} </h4>
+     
+     
+      {{#each task}}
+        <p>Name: {{this.description}}</p>
+        <p>Date created: {{this.createdOn}}</p>
+        <p>Status: {{this.completed}}</p>
+        <p>Date completed: {{this.completedOn}}</p>
+
+
+        <form method= 'POST' action = "/api/task/update/{{this._id}}?_method=PATCH">
+           <input type = "hidden" name = "id" value = {{../user._id}}>
+            <button type = "submit"> Mark completed &#215;</button>
+        </form> <br>
+
+         <form method= 'POST' action = "/api/task/remove/{{this._id}}?_method=DELETE">
+          <input type = "hidden" name = "id" value = {{../user._id}}>
+          <button type = "submit"> Remove &#215;</button>
+        </form>
+        <hr>
+
+      {{/each}}
+
+</div>
+
+<div>
+     <br><br>
+     <a href = "/api/task/create/?uid={{user._id}}"><button type = "submit"> Create new Task </button></a>
+</div>
+
+
+   
+
+             
+
+
+
+         
+
+      
+            
+        
+     
+        
+        
+
+    
+
