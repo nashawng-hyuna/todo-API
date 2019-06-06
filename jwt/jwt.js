@@ -4,19 +4,19 @@ const jwt = require('jsonwebtoken');
 const jwt_sign = util.promisify(jwt.sign);
 const jwt_verify = util.promisify(jwt.verify);
 
-module.exports.sign = async (res, payload) =>{
+module.exports.sign = async (res,payload) =>{
 
     try{
          //sign token and set cookie
          let token = await jwt_sign(payload, 'secret', {expiresIn: 100});
-
-        return res.cookie('Auth-token', token);
+         
+         return res.cookie('Auth-token', token);
 
         //return await jwt_sign(payload, 'secret', {expiresIn: 60*60});   
     }
     catch(error)
     {
-       res.status(404).send(error);
+        throw new Error('Authentication problem');
     }  
 }
 

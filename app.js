@@ -57,10 +57,6 @@ app.use(flash());
 });
 
 
-
-
-
-
 //API routes
 app.use('/api/task', taskRoutes);
 app.use('/api/user', userRoutes);
@@ -69,13 +65,16 @@ app.use('/api/user', userRoutes);
 //error middlware
 app.use((error, req, res, next) =>{
     
-    res.status(400).json({
-       name: error.name,
-       message: error.message,  
-    });
+    if(error)
+    {
+        res.status(400).json({
+            name: error.name,
+            message: error.message,  
+         });
+    }
 
     next();
-})
+});
 
 
 
